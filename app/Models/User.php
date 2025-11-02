@@ -5,6 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Observers\UserObserver;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
 #[ObservedBy([UserObserver::class])]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasFactory, HasRoles, HasUuids, Notifiable, SoftDeletes;
 
@@ -38,5 +41,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->profile_picture ?? null;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->hasRole('Super Admin');
     }
 }
